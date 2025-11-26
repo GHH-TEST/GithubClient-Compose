@@ -4,8 +4,10 @@ import com.ghh.test.githubclient.model.Repo
 import com.ghh.test.githubclient.model.RepoDetail
 import com.ghh.test.githubclient.model.RepoSearchResponse
 import com.ghh.test.githubclient.model.User
+import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Headers
+import retrofit2.http.POST
 import retrofit2.http.Path
 import retrofit2.http.Query
 
@@ -35,4 +37,15 @@ interface GithubApi {
         @Path("owner") repoOwnerLogin: String,
         @Path("repo") repoName: String
     ): RepoDetail
+
+    @POST("repos/{owner}/{repo}/issues")
+    @Headers("Accept: application/vnd.github.v3+json")
+    suspend fun createIssue(
+        @Path("owner") owner: String,
+        @Path("repo") repo: String,
+        @Body body: IssueRequest
+    ): IssueResponse
 }
+
+data class IssueRequest(val title: String)
+data class IssueResponse(val id: Long, val title: String)

@@ -10,10 +10,15 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -22,9 +27,11 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.ghh.test.githubclient.ui.util.showToast
 import com.ghh.test.githubclient.viewmodel.RepoDetailViewModel
 import com.ghh.test.githubclient.viewmodel.ViewModelFactory
 
@@ -41,8 +48,66 @@ fun RepoDetailScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val showIssueButton by viewModel.showIssueButton.collectAsStateWithLifecycle()
 
+    val issueDialogVisible by viewModel.issueDialogVisible.collectAsStateWithLifecycle()
+    val issueSubmissionState by viewModel.issueSubmissionState.collectAsStateWithLifecycle()
+    var issueTitle by remember { mutableStateOf("") }
+    val ctx = LocalContext.current
+
     LaunchedEffect(Unit) {
         viewModel.loadRepoDetail(repoOwnerLogin, repoName)
+    }
+
+    LaunchedEffect(issueSubmissionState) {
+        when (issueSubmissionState) {
+            is RepoDetailViewModel.IssueSubmissionState.Success -> {
+                ctx.showToast("Issue提交成功")
+                issueTitle = ""
+            }
+            is RepoDetailViewModel.IssueSubmissionState.Error -> {
+                val msg = (issueSubmissionState as RepoDetailViewModel.IssueSubmissionState.Error).message
+                ctx.showToast(msg)
+            }
+            else -> Unit
+        }
+    }
+
+    if (issueDialogVisible) {
+        Dialog(onDismissRequest = { viewModel.hideIssueDialog() }) {
+            Column(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(24.dp),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            ) {
+                Text(text = "提交Issue", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+
+                OutlinedTextField(
+                    value = issueTitle,
+                    onValueChange = { issueTitle = it },
+                    label = { Text("请输入标题") },
+                    modifier = Modifier.fillMaxWidth(),
+                    singleLine = true,
+                    enabled = issueSubmissionState !is RepoDetailViewModel.IssueSubmissionState.Loading
+                )
+
+                Button(
+                    onClick = { viewModel.submitIssue(issueTitle) },
+                    modifier = Modifier.fillMaxWidth(),
+                    enabled = issueTitle.isNotBlank() && issueSubmissionState !is RepoDetailViewModel.IssueSubmissionState.Loading
+                ) {
+                    if (issueSubmissionState is RepoDetailViewModel.IssueSubmissionState.Loading) {
+                        CircularProgressIndicator(
+                            modifier = Modifier.size(20.dp),
+                            strokeWidth = 2.dp,
+                            color = MaterialTheme.colorScheme.onPrimary
+                        )
+                    } else {
+                        Text(text = "提交")
+                    }
+                }
+            }
+        }
     }
 
     Column(
@@ -122,6 +187,7 @@ fun RepoDetailScreen(
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             StatItem(title = "Stars", value = repoDetail.stars.toString())
+                            StatItem(title = "Issues", value = repoDetail.openIssuesCount.toString())
                         }
 
                         Column(
@@ -154,7 +220,7 @@ fun RepoDetailScreen(
 
         if (showIssueButton) {
             Button(
-                onClick = { viewModel.submitIssue() },
+                onClick = { viewModel.showIssueDialog() },
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(bottom = 16.dp)

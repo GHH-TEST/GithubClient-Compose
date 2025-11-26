@@ -23,8 +23,9 @@ data class RepoSearchResponse(
 data class RepoDetail(
     val id: Long,
     val name: String,
-    val owner: Owner, // 仓库所有者的Login
+    val owner: Owner,
     val description: String?,
     @SerializedName("stargazers_count") val stars: Int,
-    val language: String?
+    val language: String?,
+    @SerializedName("open_issues_count") val openIssuesCount: Int
 )

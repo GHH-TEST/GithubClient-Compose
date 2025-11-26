@@ -1,6 +1,8 @@
 package com.ghh.test.githubclient.repository
 
 import com.ghh.test.githubclient.api.GithubApi
+import com.ghh.test.githubclient.api.IssueRequest
+import com.ghh.test.githubclient.api.IssueResponse
 import com.ghh.test.githubclient.model.Repo
 import com.ghh.test.githubclient.model.RepoDetail
 import com.ghh.test.githubclient.model.User
@@ -26,7 +28,7 @@ class GithubRepository {
         val authorizedClient = okHttpClient.newBuilder()
             .addInterceptor { chain ->
                 val authorizedRequest = chain.request().newBuilder()
-                    .header("Authorization", "token $token") // 动态添加 Token
+                    .header("Authorization", "token $token")
                     .header("Accept", "application/vnd.github.v3+json")
                     .build()
                 chain.proceed(authorizedRequest)
@@ -69,5 +71,11 @@ class GithubRepository {
 
     suspend fun getRepoDetail(repoOwnerLogin: String, repoName: String): RepoDetail {
         return baseRetrofit.create(GithubApi::class.java).getRepoDetail(repoOwnerLogin, repoName)
+    }
+
+    suspend fun createIssue(token: String, owner: String, repo: String, title: String): IssueResponse {
+        val authorizedRetrofit = getAuthorizedRetrofit(token)
+        val githubApi = authorizedRetrofit.create(GithubApi::class.java)
+        return githubApi.createIssue(owner, repo, IssueRequest(title))
     }
 }
