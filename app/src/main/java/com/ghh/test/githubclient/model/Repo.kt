@@ -1,9 +1,21 @@
 package com.ghh.test.githubclient.model
 
+import com.google.gson.annotations.SerializedName
+
 data class Repo(
-    val id: Int,
+    val id: Long,
     val name: String,
-    val owner: String,
-    val description: String,
-    val stars: Int
+    val owner: Owner,
+    val description: String?,
+    @SerializedName("stargazers_count") val stars: Int,
+    val language: String?
+)
+
+data class Owner(
+    val login: String
+)
+
+data class RepoSearchResponse(
+    val items: List<Repo>,
+    @SerializedName("total_count") val totalCount: Int
 )
