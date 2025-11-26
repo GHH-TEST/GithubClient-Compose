@@ -1,10 +1,16 @@
 package com.ghh.test.githubclient.api
 
 import com.ghh.test.githubclient.model.RepoSearchResponse
+import com.ghh.test.githubclient.model.User
 import retrofit2.http.GET
+import retrofit2.http.Headers
 import retrofit2.http.Query
 
 interface GithubApi {
+    @GET("user")
+    @Headers("Accept: application/vnd.github.v3+json")
+    suspend fun getUserInfo(): User
+
     @GET("search/repositories")
     suspend fun searchHotRepos(
         @Query("q") query: String = "stars:>10000", // 高星仓库作为热门标准

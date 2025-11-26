@@ -1,31 +1,52 @@
 package com.ghh.test.githubclient.repository
 
 import com.ghh.test.githubclient.api.GithubApi
-import com.ghh.test.githubclient.model.Repo
+import com.ghh.test.githubclient.model.User
+import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 class GithubRepository {
-    private val githubApi: GithubApi by lazy {
-        Retrofit.Builder()
-            .baseUrl("https://api.github.com/")
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-            .create(GithubApi::class.java)
+    private val okHttpClient: OkHttpClient by lazy {
+        val builder = OkHttpClient.Builder()
+        builder.build()
     }
 
-    suspend fun hotRepos(
-        page: Int,
-        perPage: Int
-    ): List<Repo> {
-        return try {
-            val response = githubApi.searchHotRepos(
-                page = page,
-                perPage = perPage
-            )
-            response.items
-        } catch (e: Exception) {
-            emptyList()
-        }
+    private val baseRetrofit: Retrofit by lazy {
+        Retrofit.Builder()
+            .baseUrl("https://api.github.com/")
+            .client(okHttpClient)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+    }
+
+    private fun getAuthorizedRetrofit(token: String): Retrofit {
+        val authorizedClient = okHttpClient.newBuilder()
+            .addInterceptor { chain ->
+                val authorizedRequest = chain.request().newBuilder()
+                    .header("Authorization", "token $token") // 动态添加 Token
+                    .header("Accept", "application/vnd.github.v3+json")
+                    .build()
+                chain.proceed(authorizedRequest)
+            }
+            .build()
+
+        return baseRetrofit.newBuilder()
+            .client(authorizedClient)
+            .build()
+    }
+
+    suspend fun getHotRepos(page: Int, perPage: Int = 20): List<com.ghh.test.githubclient.model.Repo> {
+        val githubApi = baseRetrofit.create(GithubApi::class.java)
+        return githubApi.searchHotRepos(
+            page = page,
+            perPage = perPage
+        ).items
+    }
+
+    suspend fun getUserInfo(token: String): User {
+        val authorizedRetrofit = getAuthorizedRetrofit(token.trim())
+        val githubApi = authorizedRetrofit.create(GithubApi::class.java)
+        return githubApi.getUserInfo()
     }
 }

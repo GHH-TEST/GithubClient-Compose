@@ -34,7 +34,7 @@ class HotReposViewModel : ViewModel() {
     private fun loadHotRepos() {
         viewModelScope.launch {
             try {
-                val newRepos = repository.hotRepos(
+                val newRepos = repository.getHotRepos(
                     page = currentPage,
                     perPage = pageSize
                 )
