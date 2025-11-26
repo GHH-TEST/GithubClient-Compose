@@ -8,7 +8,9 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -27,7 +29,6 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.window.Dialog
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
@@ -72,28 +73,41 @@ fun RepoDetailScreen(
     }
 
     if (issueDialogVisible) {
-        Dialog(onDismissRequest = { viewModel.hideIssueDialog() }) {
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(24.dp),
-                horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(16.dp)
-            ) {
-                Text(text = "提交Issue", fontSize = 18.sp, fontWeight = FontWeight.Bold)
+        AlertDialog(
+            onDismissRequest = {
+                if (issueSubmissionState !is RepoDetailViewModel.IssueSubmissionState.Loading) {
+                    viewModel.hideIssueDialog()
+                }
+            },
+            title = { Text(text = "提交新Issue", style = MaterialTheme.typography.titleMedium) },
+            text = {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = 8.dp),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    OutlinedTextField(
+                        value = issueTitle,
+                        onValueChange = { if (issueSubmissionState !is RepoDetailViewModel.IssueSubmissionState.Loading) issueTitle = it },
+                        label = { Text("Issue标题") },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true,
+                        enabled = issueSubmissionState !is RepoDetailViewModel.IssueSubmissionState.Loading,
+                    )
 
-                OutlinedTextField(
-                    value = issueTitle,
-                    onValueChange = { issueTitle = it },
-                    label = { Text("请输入标题") },
-                    modifier = Modifier.fillMaxWidth(),
-                    singleLine = true,
-                    enabled = issueSubmissionState !is RepoDetailViewModel.IssueSubmissionState.Loading
-                )
-
+                    if (issueSubmissionState is RepoDetailViewModel.IssueSubmissionState.Error) {
+                        Text(
+                            text = (issueSubmissionState as RepoDetailViewModel.IssueSubmissionState.Error).message,
+                            color = MaterialTheme.colorScheme.error,
+                            fontSize = 12.sp
+                        )
+                    }
+                }
+            },
+            confirmButton = {
                 Button(
                     onClick = { viewModel.submitIssue(issueTitle) },
-                    modifier = Modifier.fillMaxWidth(),
                     enabled = issueTitle.isNotBlank() && issueSubmissionState !is RepoDetailViewModel.IssueSubmissionState.Loading
                 ) {
                     if (issueSubmissionState is RepoDetailViewModel.IssueSubmissionState.Loading) {
@@ -106,8 +120,21 @@ fun RepoDetailScreen(
                         Text(text = "提交")
                     }
                 }
-            }
-        }
+            },
+            dismissButton = {
+                Button(
+                    onClick = { viewModel.hideIssueDialog() },
+                    enabled = issueSubmissionState !is RepoDetailViewModel.IssueSubmissionState.Loading,
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = MaterialTheme.colorScheme.secondaryContainer,
+                        contentColor = MaterialTheme.colorScheme.onSecondaryContainer
+                    )
+                ) {
+                    Text(text = "取消")
+                }
+            },
+            modifier = Modifier.padding(16.dp)
+        )
     }
 
     Column(
