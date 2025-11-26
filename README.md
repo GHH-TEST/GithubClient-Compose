@@ -1,7 +1,8 @@
 # GithubClient-Compose
 
 Test repository for GitHub Client
-
+<br>
+<br>
 
 
 
@@ -9,7 +10,8 @@ Test repository for GitHub Client
 2. 测试账号用户名：GHH-TEST
 3. 测试仓库名称：[GithubClient-Compose](https://github.com/GHH-TEST/GithubClient-Compose)
 
-  
+<br> 
+<br>
 
 
 
@@ -24,7 +26,10 @@ Test repository for GitHub Client
 | 查看仓库详情   | 点击仓库列表项 → 查看所有者、描述、Stars/Issues 数            |
 | 提交 Issue | 登录且为仓库所有者 → 详情页「提交 Issue」→ 输入标题 → 提交              |
 
-  
+
+
+<br> 
+<br>
 
 
 
