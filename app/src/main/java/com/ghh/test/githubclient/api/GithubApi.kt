@@ -1,10 +1,12 @@
 package com.ghh.test.githubclient.api
 
 import com.ghh.test.githubclient.model.Repo
+import com.ghh.test.githubclient.model.RepoDetail
 import com.ghh.test.githubclient.model.RepoSearchResponse
 import com.ghh.test.githubclient.model.User
 import retrofit2.http.GET
 import retrofit2.http.Headers
+import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface GithubApi {
@@ -27,4 +29,10 @@ interface GithubApi {
         @Query("per_page") perPage: Int = 20,
         @Query("sort") sort: String = "updated" // 按更新时间排序
     ): List<Repo>
+
+    @GET("repos/{owner}/{repo}")
+    suspend fun getRepoDetail(
+        @Path("owner") repoOwnerLogin: String,
+        @Path("repo") repoName: String
+    ): RepoDetail
 }

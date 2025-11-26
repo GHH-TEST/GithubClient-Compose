@@ -1,6 +1,7 @@
 package com.ghh.test.githubclient.viewmodel
 
 import android.app.Application
+import android.content.Context
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -16,9 +17,9 @@ import kotlinx.coroutines.launch
 import retrofit2.HttpException
 import java.io.IOException
 
-class LoginViewModel(application: Application) : ViewModel() {
-    private val dataStoreUtil = DataStoreUtil(application)
-    private val repository = GithubRepository() // 全局复用 Repository 实例（无需每次创建）
+class LoginViewModel(context: Context) : ViewModel() {
+    private val dataStoreUtil = DataStoreUtil(context)
+    private val repository = GithubRepository()
 
     private val _loginState = MutableStateFlow<LoginState>(LoginState.Idle)
     val loginState: StateFlow<LoginState> = _loginState.asStateFlow()

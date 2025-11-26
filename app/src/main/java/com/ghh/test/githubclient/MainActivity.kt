@@ -38,6 +38,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.ghh.test.githubclient.ui.HotReposScreen
 import com.ghh.test.githubclient.ui.MyPage
+import com.ghh.test.githubclient.ui.RepoDetailScreen
 import com.ghh.test.githubclient.ui.theme.GithubClientComposeTheme
 import com.ghh.test.githubclient.ui.util.showToast
 import com.ghh.test.githubclient.viewmodel.LoginViewModel
@@ -108,6 +109,13 @@ class MainActivity : ComponentActivity() {
                                 onDismiss = { navController.popBackStack() },
                                 onLoginClick = { token -> loginViewModel.login(token.trim()) },
                                 loginState = loginState
+                            )
+                        }
+                        composable("repoDetail/{repoOwnerLogin}/{repoName}") { backStackEntry ->
+                            RepoDetailScreen(
+                                navController = navController,
+                                repoOwnerLogin = backStackEntry.arguments?.getString("repoOwnerLogin") ?: "",
+                                repoName = backStackEntry.arguments?.getString("repoName") ?: ""
                             )
                         }
                     }

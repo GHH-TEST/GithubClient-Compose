@@ -1,5 +1,3 @@
-package com.ghh.test.githubclient.viewmodel
-
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.ghh.test.githubclient.model.Repo
@@ -15,13 +13,16 @@ class MyReposViewModel : ViewModel() {
     private val repository = GithubRepository()
     private val pageSize = 20
     private var currentPage = 1
+    private var hasLoadedInitialData = false
 
     private val _uiState = MutableStateFlow<MyReposUiState>(MyReposUiState.Loading)
     val uiState: StateFlow<MyReposUiState> = _uiState.asStateFlow()
 
+    fun shouldLoadInitialData(): Boolean = !hasLoadedInitialData
+
     fun loadMyRepos(token: String) {
         currentPage = 1
-        fetchRepos(token)
+        fetchRepos(token, isInitialLoad = true)
     }
 
     fun loadMoreMyRepos(token: String) {
@@ -29,11 +30,11 @@ class MyReposViewModel : ViewModel() {
         if (currentState is MyReposUiState.Success && !currentState.isLoading && currentState.hasMore) {
             currentPage++
             _uiState.value = currentState.copy(isLoading = true)
-            fetchRepos(token)
+            fetchRepos(token, isInitialLoad = false)
         }
     }
 
-    private fun fetchRepos(token: String) {
+    private fun fetchRepos(token: String, isInitialLoad: Boolean) {
         viewModelScope.launch {
             try {
                 val newRepos = repository.getUserRepos(
@@ -43,10 +44,10 @@ class MyReposViewModel : ViewModel() {
                 )
 
                 val currentState = _uiState.value
-                val allRepos = if (currentState is MyReposUiState.Success) {
-                    currentState.repos + newRepos
-                } else {
+                val allRepos = if (isInitialLoad || currentState !is MyReposUiState.Success) {
                     newRepos
+                } else {
+                    currentState.repos + newRepos
                 }
 
                 _uiState.value = MyReposUiState.Success(
@@ -54,6 +55,10 @@ class MyReposViewModel : ViewModel() {
                     isLoading = false,
                     hasMore = newRepos.size == pageSize
                 )
+
+                if (isInitialLoad) {
+                    hasLoadedInitialData = true
+                }
 
             } catch (e: Exception) {
                 val errorMessage = when (e) {

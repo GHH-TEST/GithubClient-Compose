@@ -1,5 +1,6 @@
 package com.ghh.test.githubclient.ui
 
+import MyReposViewModel
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -29,7 +30,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.ghh.test.githubclient.ui.component.RepoItem
 import com.ghh.test.githubclient.viewmodel.LoginViewModel
-import com.ghh.test.githubclient.viewmodel.MyReposViewModel
 
 @Composable
 fun MyPage(
@@ -51,9 +51,11 @@ fun MyPage(
         }
     }
 
-    LaunchedEffect(Unit) {
+    LaunchedEffect(token) {
         if (user != null && token.isNotBlank()) {
-            myReposViewModel.loadMyRepos(token)
+            if (myReposViewModel.shouldLoadInitialData()) {
+                myReposViewModel.loadMyRepos(token)
+            }
         }
     }
 
@@ -143,7 +145,7 @@ fun MyPage(
                         state = lazyListState
                     ) {
                         items(successState.repos) { repo ->
-                            RepoItem(repo = repo)
+                            RepoItem(repo = repo, navController = navController)
                         }
                         if (successState.isLoading) {
                             item {

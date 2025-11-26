@@ -93,7 +93,7 @@ fun HotReposScreen(
                     state = listState
                 ) {
                     items(state.repos) { repo ->
-                        RepoItem(repo = repo)
+                        RepoItem(repo = repo, navController = navController)
                     }
 
                     if (state.isLoading) {

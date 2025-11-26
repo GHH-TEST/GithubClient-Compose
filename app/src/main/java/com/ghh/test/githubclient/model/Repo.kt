@@ -19,3 +19,12 @@ data class RepoSearchResponse(
     val items: List<Repo>,
     @SerializedName("total_count") val totalCount: Int
 )
+
+data class RepoDetail(
+    val id: Long,
+    val name: String,
+    val owner: Owner, // 仓库所有者的Login
+    val description: String?,
+    @SerializedName("stargazers_count") val stars: Int,
+    val language: String?
+)
