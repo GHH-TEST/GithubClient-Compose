@@ -1,6 +1,7 @@
 package com.ghh.test.githubclient.repository
 
 import com.ghh.test.githubclient.api.GithubApi
+import com.ghh.test.githubclient.model.Repo
 import com.ghh.test.githubclient.model.User
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
@@ -48,5 +49,14 @@ class GithubRepository {
         val authorizedRetrofit = getAuthorizedRetrofit(token.trim())
         val githubApi = authorizedRetrofit.create(GithubApi::class.java)
         return githubApi.getUserInfo()
+    }
+
+    suspend fun getUserRepos(token: String, page: Int, perPage: Int = 20): List<Repo> {
+        val authorizedRetrofit = getAuthorizedRetrofit(token)
+        val githubApi = authorizedRetrofit.create(GithubApi::class.java)
+        return githubApi.getUserRepos(
+            page = page,
+            perPage = perPage
+        )
     }
 }
