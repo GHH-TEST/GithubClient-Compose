@@ -18,6 +18,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.ghh.test.githubclient.ui.HotReposScreen
 import com.ghh.test.githubclient.ui.theme.GithubClientComposeTheme
 
 class MainActivity : ComponentActivity() {
@@ -26,10 +30,22 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             GithubClientComposeTheme {
+                val navController = rememberNavController()
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    HomeScreen(
+                    NavHost(
+                        navController = navController,
+                        startDestination = "home",
                         modifier = Modifier.padding(innerPadding)
-                    )
+                    ) {
+                        composable("home") {
+                            HomeScreen(
+                                onHotReposClick = { navController.navigate("hotRepos") }
+                            )
+                        }
+                        composable("hotRepos") {
+                            HotReposScreen(navController = navController)
+                        }
+                    }
                 }
             }
         }
@@ -37,7 +53,10 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun HomeScreen(modifier: Modifier = Modifier) {
+fun HomeScreen(
+    modifier: Modifier = Modifier,
+    onHotReposClick: () -> Unit
+) {
     Column(modifier = modifier.fillMaxSize()) {
         Row(
             modifier = Modifier
@@ -56,7 +75,7 @@ fun HomeScreen(modifier: Modifier = Modifier) {
             verticalArrangement = Arrangement.spacedBy(16.dp)
         ) {
             Button(
-                onClick = { },
+                onClick = onHotReposClick,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(text = "热门仓库")
@@ -75,6 +94,6 @@ fun HomeScreen(modifier: Modifier = Modifier) {
 @Composable
 fun HomeScreenPreview() {
     GithubClientComposeTheme {
-        HomeScreen()
+        HomeScreen(onHotReposClick = {})
     }
 }
