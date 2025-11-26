@@ -39,6 +39,7 @@ import androidx.navigation.compose.rememberNavController
 import com.ghh.test.githubclient.ui.HotReposScreen
 import com.ghh.test.githubclient.ui.MyPage
 import com.ghh.test.githubclient.ui.RepoDetailScreen
+import com.ghh.test.githubclient.ui.SearchReposScreen
 import com.ghh.test.githubclient.ui.theme.GithubClientComposeTheme
 import com.ghh.test.githubclient.ui.util.showToast
 import com.ghh.test.githubclient.viewmodel.LoginViewModel
@@ -91,7 +92,8 @@ class MainActivity : ComponentActivity() {
                                 userState = userState,
                                 onHotReposClick = { navController.navigate("hotRepos") },
                                 onLoginClick = { navController.navigate("login") },
-                                onMyClick = { navController.navigate("myPage") }
+                                onMyClick = { navController.navigate("myPage") },
+                                onSearchClick = { navController.navigate("searchRepos") }
                             )
                         }
                         composable("hotRepos") {
@@ -118,6 +120,9 @@ class MainActivity : ComponentActivity() {
                                 repoName = backStackEntry.arguments?.getString("repoName") ?: ""
                             )
                         }
+                        composable("searchRepos") {
+                            SearchReposScreen(navController = navController)
+                        }
                     }
                 }
             }
@@ -131,6 +136,7 @@ fun HomeScreen(
     onHotReposClick: () -> Unit,
     onLoginClick: () -> Unit,
     onMyClick: () -> Unit,
+    onSearchClick: () -> Unit,
     modifier: Modifier = Modifier
 ) {
     Column(modifier = modifier.fillMaxSize()) {
@@ -167,7 +173,7 @@ fun HomeScreen(
                 Text(text = "热门仓库")
             }
             Button(
-                onClick = {  },
+                onClick = onSearchClick,
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Text(text = "搜索仓库")
@@ -235,7 +241,8 @@ fun HomeScreenUnloggedPreview() {
             userState = LoginViewModel.UserState(false, "", null),
             onHotReposClick = {},
             onLoginClick = {},
-            onMyClick = {}
+            onMyClick = {},
+            onSearchClick = {}
         )
     }
 }

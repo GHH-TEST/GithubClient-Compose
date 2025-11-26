@@ -5,6 +5,7 @@ import com.ghh.test.githubclient.api.IssueRequest
 import com.ghh.test.githubclient.api.IssueResponse
 import com.ghh.test.githubclient.model.Repo
 import com.ghh.test.githubclient.model.RepoDetail
+import com.ghh.test.githubclient.model.RepoSearchResponse
 import com.ghh.test.githubclient.model.User
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
@@ -77,5 +78,14 @@ class GithubRepository {
         val authorizedRetrofit = getAuthorizedRetrofit(token)
         val githubApi = authorizedRetrofit.create(GithubApi::class.java)
         return githubApi.createIssue(owner, repo, IssueRequest(title))
+    }
+
+    suspend fun searchRepos(query: String, page: Int, perPage: Int = 20): RepoSearchResponse {
+        val githubApi = baseRetrofit.create(GithubApi::class.java)
+        return githubApi.searchHotRepos(
+            query = query,
+            page = page,
+            perPage = perPage
+        )
     }
 }
