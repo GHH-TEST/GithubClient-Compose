@@ -8,6 +8,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.io.IOException
+import java.net.SocketTimeoutException
 
 class HotReposViewModel : ViewModel() {
     private val repository = GithubRepository()
@@ -31,31 +33,45 @@ class HotReposViewModel : ViewModel() {
 
     private fun loadHotRepos() {
         viewModelScope.launch {
-            val newRepos = repository.hotRepos(
-                page = currentPage,
-                perPage = pageSize
-            )
+            try {
+                val newRepos = repository.hotRepos(
+                    page = currentPage,
+                    perPage = pageSize
+                )
 
-            val currentState = _uiState.value
-            when (currentState) {
-                is HotReposUiState.Loading -> {
-                    _uiState.value = HotReposUiState.Success(
-                        repos = newRepos,
-                        isLoading = false,
-                        hasMore = newRepos.size == pageSize
-                    )
+                if (newRepos.isEmpty() && currentPage == 1) {
+                    _uiState.value = HotReposUiState.Error("暂无热门仓库数据")
+                    return@launch
                 }
-                is HotReposUiState.Success -> {
-                    val allRepos = currentState.repos + newRepos
-                    _uiState.value = currentState.copy(
-                        repos = allRepos,
-                        isLoading = false,
-                        hasMore = newRepos.size == pageSize
-                    )
+
+                val currentState = _uiState.value
+                when (currentState) {
+                    is HotReposUiState.Loading -> {
+                        _uiState.value = HotReposUiState.Success(
+                            repos = newRepos,
+                            isLoading = false,
+                            hasMore = newRepos.size == pageSize
+                        )
+                    }
+                    is HotReposUiState.Success -> {
+                        val allRepos = currentState.repos + newRepos
+                        _uiState.value = currentState.copy(
+                            repos = allRepos,
+                            isLoading = false,
+                            hasMore = newRepos.size == pageSize
+                        )
+                    }
+                    is HotReposUiState.Error -> Unit
                 }
-                is HotReposUiState.Error -> Unit
+                currentPage++
+            } catch (e: Exception) {
+                val errorMessage = when (e) {
+                    is SocketTimeoutException -> "网络超时，请检查网络连接"
+                    is IOException -> "网络异常，请确保已连接网络"
+                    else -> "加载失败：${e.message ?: "未知错误"}"
+                }
+                _uiState.value = HotReposUiState.Error(errorMessage)
             }
-            currentPage++
         }
     }
 

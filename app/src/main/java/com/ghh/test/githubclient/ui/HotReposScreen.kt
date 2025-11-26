@@ -18,6 +18,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -26,6 +27,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import androidx.navigation.compose.rememberNavController
 import com.ghh.test.githubclient.ui.component.RepoItem
+import com.ghh.test.githubclient.ui.util.showToast
 import com.ghh.test.githubclient.viewmodel.HotReposViewModel
 import kotlinx.coroutines.flow.collectLatest
 
@@ -36,6 +38,14 @@ fun HotReposScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val listState = rememberLazyListState()
+    val context = LocalContext.current
+
+    LaunchedEffect(uiState) {
+        if (uiState is HotReposViewModel.HotReposUiState.Error) {
+            val errorMessage = (uiState as HotReposViewModel.HotReposUiState.Error).message
+            context.showToast(errorMessage)
+        }
+    }
 
     LaunchedEffect(listState) {
         snapshotFlow { listState.layoutInfo.visibleItemsInfo.lastOrNull()?.index }
@@ -50,7 +60,6 @@ fun HotReposScreen(
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        // 顶部导航栏（保留返回按钮）
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -115,9 +124,10 @@ fun HotReposScreen(
                 }
             }
             is HotReposViewModel.HotReposUiState.Error -> {
+                val errorMessage = (uiState as HotReposViewModel.HotReposUiState.Error).message
                 Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Text(
-                        text = "加载失败：${(uiState as HotReposViewModel.HotReposUiState.Error).message}",
+                        text = errorMessage,
                         color = MaterialTheme.colorScheme.error
                     )
                 }
